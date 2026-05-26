@@ -40,9 +40,23 @@ app.use('/api', apiLimiter);
 
 if (config.isProduction) {
   const clientDist = path.resolve(__dirname, '../../client/dist');
+  const indexHtml = path.join(clientDist, 'index.html');
+
   app.use(express.static(clientDist));
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(clientDist, 'index.html'));
+
+  // Express 5 не поддержает app.get('*') — SPA fallback через middleware
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      next();
+      return;
+    }
+    if (req.path.startsWith('/api')) {
+      next();
+      return;
+    }
+    res.sendFile(indexHtml, (err) => {
+      if (err) next(err);
+    });
   });
 }
 

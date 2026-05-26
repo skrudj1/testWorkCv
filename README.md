@@ -1,51 +1,59 @@
 # Лендинг-портфолио — Алексей Володько
 
-Тестовое задание: одностраничный сайт о себе как о разработчике, с рабочей формой и небольшой AI-фичей.
+Тестовое задание: одностраничный сайт о себе как о разработчике, с рабочей формой и AI-интеграцией.
 
+**Репозиторий:** https://github.com/skrudj1/testWorkCv  
 **Демо:** https://testworkcv.onrender.com  
 **Контакты:** alexvolodko1504@mail.ru · +7 (931) 998-98-93
 
 ---
 
-## Что внутри
+## Что на сайте
 
-- Лендинг: обо мне, подход к работе, кейсы, контакты
-- Форма: имя, телефон, email, комментарий
-- После отправки — два письма: мне на почту и копия человеку, который заполнил форму
-- Кнопка **«Улучшить текст (AI)»** — подправляет комментарий перед отправкой
+1. **Обо мне** — стек, опыт, направления (frontend / backend / Web3)
+2. **Как работаю** — подход к задачам и использование AI в работе
+3. **Кейсы** — проекты из резюме и личный вклад
+4. **Контакты** — форма обратной связи
+
+**Форма:** имя, телефон, email, комментарий. Состояния loading / success / error, валидация на клиенте и на сервере (для API-режима).
+
+**Почта после отправки:**
+- **Локально (SMTP в `.env`):** письмо владельцу (`MAIL_OWNER`) + копия на email из формы
+- **На деплое (Render + Web3Forms):** письмо на почту владельца; email отправителя указан в теле письма (копия гостю на бесплатном тарифе Web3Forms недоступна)
+
+**AI:** кнопка «Улучшить текст» — запрос к `POST /api/ai/improve-text` (OpenRouter).
 
 ---
 
 ## Стек
 
-**Фронт:** HTML, TypeScript, SCSS, Vite (без React — по ТЗ достаточно JS/TS + вёрстки)
+| Часть | Технологии |
+|--------|------------|
+| Frontend | HTML, TypeScript, SCSS, Vite |
+| Backend | Node.js, Express, Zod |
+| Почта | Nodemailer (SMTP локально) / Web3Forms API (продакшен на Render) |
+| AI | OpenRouter (`openrouter/free`), ключ только на сервере |
 
-**Бэк:** Node.js, Express, Nodemailer (почта), Zod (проверка полей)
-
-**AI:** OpenRouter, модель `openrouter/free` (бесплатный вариант)
-
-**Почта:** SMTP локально (Gmail/Mailtrap); на Render — SendGrid или Resend через HTTPS API
+Монорепозиторий: `client/` (сайт), `server/` (API).
 
 ---
 
-## Как запустить у себя
+## Как запустить локально
 
 Нужен **Node.js 18+**.
 
 ```bash
-git clone <url-репозитория>
-cd testWork
+git clone https://github.com/skrudj1/testWorkCv.git
+cd testWorkCv
 cp .env.example .env
 ```
 
-Открой `.env` и заполни:
+Заполните `.env` (см. `.env.example`):
 
-- **SMTP** — для локальной разработки (Mailtrap, Gmail и т.д.)
-- **SendGrid / Resend** — для production на Render (см. ниже)
-- **MAIL_OWNER** — куда приходят заявки с формы
-- **AI_API_KEY** — ключ с [OpenRouter](https://openrouter.ai) (без него форма всё равно работает, AI — нет)
-
-Дальше:
+- **SMTP_*** — для отправки формы через backend (Mailtrap, Gmail и т.д.)
+- **MAIL_OWNER** — куда приходят заявки
+- **AI_API_KEY**, **AI_BASE_URL**, **AI_MODEL** — для AI (опционально)
+- **CLIENT_ORIGIN** — `http://localhost:5173`
 
 ```bash
 npm install
@@ -55,93 +63,83 @@ npm run dev
 - Сайт: http://localhost:5173  
 - API: http://localhost:3001  
 
-Остановить: `Ctrl+C`
-
-### Сборка для продакшена
+Сборка и запуск как на сервере:
 
 ```bash
 npm run build
 NODE_ENV=production npm start
 ```
 
-Один сервер отдаёт и сайт, и API.
-
 ---
 
 ## Как устроена форма
 
-1. Пользователь заполняет поля на сайте  
-2. Браузер шлёт `POST /api/contact`  
-3. Сервер проверяет данные и отправляет письма через SMTP  
-4. На экране — загрузка, потом успех или текст ошибки  
+**Локально / без Web3Forms**
 
-Письма:
+1. Браузер → `POST /api/contact` (JSON)
+2. Express + Zod проверяют поля
+3. Nodemailer отправляет 2 письма (владелец + копия пользователю)
+4. Ответ `{ ok, message }` → UI показывает success / error
 
-- **Мне** — на адрес из `MAIL_OWNER`
-- **Копия** — на email из формы
+**Продакшен (Render)**
+
+Render Free **блокирует исходящий SMTP** (порты 587/465). Поэтому на деплое форма шлёт заявку через **Web3Forms** из браузера (`VITE_WEB3FORMS_ACCESS_KEY` в переменных окружения при сборке).
+
+Цепочка на демо: **frontend → HTTPS (Web3Forms) → почта владельца**.  
+AI по-прежнему идёт через backend: **frontend → `/api/ai/improve-text` → OpenRouter**.
+
+Обработка ошибок: сообщения в UI, логи на сервере, rate limit на API.
 
 ---
 
 ## Как устроен AI
 
-Кнопка рядом с полем «Комментарий» → `POST /api/ai/improve-text` → OpenRouter переписывает текст → результат подставляется в поле.
+Кнопка у поля «Комментарий» → `POST /api/ai/improve-text` → OpenRouter переписывает текст → результат подставляется в поле.
 
-Ключ хранится только на сервере (в `.env`), в браузер не попадает.
+`AI_API_KEY` хранится только в `.env` на сервере, в клиентский бандл не попадает.
 
 ---
 
-## Деплой
+## Деплой (Render)
 
-Подойдёт **Render**, **Railway** или любой хостинг с Node.js.
+- **Build:** `npm install && npm run build`
+- **Start:** `npm start`
+- **Environment (минимум для демо):**
 
-Пример для Render:
-
-- **Build:** `npm install && npm run build`  
-- **Start:** `npm start`  
-- **Env:** те же переменные, что в `.env` (файл в репозиторий не кладём)  
-- **CLIENT_ORIGIN:** URL деплоя, например `https://testworkcv.onrender.com`
-
-### Почта на Render Free
-
-Render **блокирует SMTP** (порты 587/465). Gmail/Яндекс локально работают, на Render — таймаут.
-
-#### Вариант 1 — Web3Forms (проще всего, без SendGrid/Brevo)
-
-1. Открой [web3forms.com](https://web3forms.com) → введи **alexvolodko1504@mail.ru** (или другой ящик для заявок).
-2. Подтверди email → скопируй **Access Key**.
-3. В Render **Environment** (важно: префикс `VITE_` — ключ попадает в сборку фронта):
-
-```
-VITE_WEB3FORMS_ACCESS_KEY=ваш-ключ-с-почты
+```env
+NODE_ENV=production
 CLIENT_ORIGIN=https://testworkcv.onrender.com
+VITE_WEB3FORMS_ACCESS_KEY=ваш_ключ_с_web3forms.com
+AI_API_KEY=sk-or-...
+AI_BASE_URL=https://openrouter.ai/api
+AI_MODEL=openrouter/free
 ```
 
-4. **Пересоберите** деплой (Clear build cache → Deploy) — без пересборки ключ не подхватится.
+После добавления `VITE_*` — пересобрать деплой (Clear build cache).
 
-Письмо придёт на mail.ru (email отправителя будет в теле письма). Копия посетителю на бесплатном Web3Forms недоступна (поле `ccemail` — Pro). Запросы **только из браузера**.
-
-#### Вариант 2 — SendGrid / Resend
-
-Если регистрация проходит: `MAIL_PROVIDER=sendgrid` + `SENDGRID_API_KEY`, либо Resend с доменом.
+Подробнее про SMTP на Render и альтернативы — в комментариях к `.env.example`.
 
 ---
 
-## Про AI при разработке
+## AI при разработке
 
-Пользовался **Cursor** (агент, подсказки, черновики кода).
+**Инструменты:** Cursor (агент, автодополнение), OpenRouter для runtime AI на сайте.
 
-**С ИИ:** каркас проекта, сервер, стили, первый вариант README.
+**С помощью ИИ:** каркас monorepo, Express API, стили, черновик README, интеграция OpenRouter.
 
-**Сам допиливал:** тексты из резюме, валидацию формы, отправку почты, OpenRouter вместо DeepSeek, обработку ошибок, проверку на реальной почте.
+**Вручную / доработано:** контент из резюме, валидация формы, настройка реальной почты, деплой на Render, обход блокировки SMTP (Web3Forms), CSP для внешнего API, якорная навигация и отступы под sticky-header, правки после тестов на проде.
 
 ---
 
-## Структура папок (коротко)
+## Структура проекта
 
 ```
-client/   — сайт (HTML, SCSS, TS)
-server/   — API, почта, AI
-.env      — секреты (только локально, в git не попадает)
+client/          — HTML, SCSS, TS (Vite)
+  src/modules/   — форма, навигация, рендер секций
+  src/api/       — клиент API
+server/          — Express, маршруты /api/contact и /api/ai
+.env             — секреты (не в git)
+.env.example     — шаблон переменных
 ```
 
 ---

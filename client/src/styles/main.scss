@@ -9,8 +9,7 @@
 
 html {
   scroll-behavior: smooth;
-  // якоря (#about, #approach…) — заголовок не под sticky-хедер
-  scroll-padding-top: calc(#{$header-h} + 1rem);
+  scroll-padding-top: calc(#{$header-h} + #{$scroll-anchor-gap});
 }
 
 body {
@@ -400,10 +399,6 @@ p {
 }
 
 // Sections
-.section[id] {
-  scroll-margin-top: calc(#{$header-h} + 1rem);
-}
-
 .section {
   padding: 4rem 0;
 

@@ -7,7 +7,7 @@ import rateLimit from 'express-rate-limit';
 import { config } from './config.js';
 import { contactRouter } from './routes/contact.js';
 import { aiRouter } from './routes/ai.js';
-import { verifyMailConnection } from './services/mail.js';
+import { getMailTransportLabel, verifyMailConnection } from './services/mail.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -79,10 +79,17 @@ app.use(
 
 app.listen(config.port, async () => {
   const mailOk = await verifyMailConnection();
+  const mailLabel = getMailTransportLabel();
   console.log(`Server: http://localhost:${config.port}`);
-  console.log(
-    `SMTP: ${mailOk ? 'connected' : 'unreachable (проверьте SMTP_* или смените провайдера на Brevo)'}`,
-  );
+  if (mailOk) {
+    console.log(`Mail (${mailLabel}): connected`);
+  } else if (config.mail.provider === 'smtp' && config.isProduction) {
+    console.log(
+      `Mail (${mailLabel}): unreachable — на Render Free SMTP заблокирован. Укажите MAIL_PROVIDER=web3forms и WEB3FORMS_ACCESS_KEY (см. web3forms.com).`,
+    );
+  } else {
+    console.log(`Mail (${mailLabel}): unreachable (проверьте переменные окружения)`);
+  }
   console.log(
     `AI: ${config.ai.enabled ? `${config.ai.model} (${config.ai.baseUrl})` : 'disabled'}`,
   );

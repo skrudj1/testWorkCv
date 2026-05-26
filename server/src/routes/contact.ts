@@ -71,7 +71,7 @@ contactRouter.post('/', async (req, res) => {
       res.status(500).json({
         ok: false,
         message:
-          'Почтовый сервер недоступен с хостинга (таймаут). Яндекс SMTP с Render не работает — укажите Brevo (smtp-relay.brevo.com) в Environment.',
+          'Почта с хостинга недоступна (Render блокирует SMTP). Задайте MAIL_PROVIDER=web3forms и WEB3FORMS_ACCESS_KEY — ключ на web3forms.com по вашему email.',
       });
       return;
     }

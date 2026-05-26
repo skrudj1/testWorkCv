@@ -2,11 +2,20 @@ import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 import { config } from '../config.js';
 import type { ContactPayload } from '../validation.js';
+import {
+  sendResendEmail,
+  sendSendGridEmail,
+  sendWeb3FormsContact,
+  verifyResendConnection,
+  verifySendGridConnection,
+  verifyWeb3FormsConnection,
+} from './mail-http.js';
 
 let transporter: Transporter | null = null;
 
 /** Пауза между двумя отдельными письмами (лимит Mailtrap Sandbox) */
 const SMTP_SEND_GAP_MS = 3500;
+const HTTP_SEND_GAP_MS = 500;
 const SMTP_RETRY_DELAYS_MS = [2000, 4000, 6000];
 
 function delay(ms: number): Promise<void> {
@@ -86,10 +95,60 @@ function buildUserCopyHtml(data: ContactPayload): string {
   `;
 }
 
-export async function sendContactEmails(data: ContactPayload): Promise<void> {
+function ownerText(data: ContactPayload): string {
+  return [
+    `Имя: ${data.name}`,
+    `Телефон: ${data.phone}`,
+    `Email: ${data.email}`,
+    '',
+    'Комментарий:',
+    data.comment,
+  ].join('\n');
+}
+
+function userCopyText(data: ContactPayload): string {
+  return [
+    `Здравствуйте, ${data.name}!`,
+    '',
+    'Спасибо за обращение. Ниже копия вашего сообщения:',
+    '',
+    data.comment,
+    '',
+    'С уважением,',
+    'Алексей Володько',
+    config.mail.owner,
+  ].join('\n');
+}
+
+async function sendContactEmailsViaHttp(
+  send: typeof sendResendEmail | typeof sendSendGridEmail,
+  apiKey: string,
+  data: ContactPayload,
+): Promise<void> {
+  await send(apiKey, {
+    from: config.mail.from,
+    to: config.mail.owner,
+    cc: data.email,
+    replyTo: data.email,
+    subject: `[Портфолио] Сообщение от ${data.name}`,
+    text: ownerText(data),
+    html: buildOwnerHtml(data),
+  });
+
+  await delay(HTTP_SEND_GAP_MS);
+
+  await send(apiKey, {
+    from: config.mail.from,
+    to: data.email,
+    subject: 'Копия вашего сообщения — Алексей Володько',
+    text: userCopyText(data),
+    html: buildUserCopyHtml(data),
+  });
+}
+
+async function sendContactEmailsViaSmtp(data: ContactPayload): Promise<void> {
   const transport = getTransporter();
 
-  // Одно SMTP-сообщение: владелец + копия (CC) на email из формы
   await sendWithRetry(() =>
     transport.sendMail({
       from: config.mail.from,
@@ -97,38 +156,20 @@ export async function sendContactEmails(data: ContactPayload): Promise<void> {
       cc: data.email,
       replyTo: data.email,
       subject: `[Портфолио] Сообщение от ${data.name}`,
-      text: [
-        `Имя: ${data.name}`,
-        `Телефон: ${data.phone}`,
-        `Email: ${data.email}`,
-        '',
-        'Комментарий:',
-        data.comment,
-      ].join('\n'),
+      text: ownerText(data),
       html: buildOwnerHtml(data),
     }),
   );
 
   await delay(SMTP_SEND_GAP_MS);
 
-  // Отдельное «спасибо» пользователю (если лимит — не роняем всю отправку)
   try {
     await sendWithRetry(() =>
       transport.sendMail({
         from: config.mail.from,
         to: data.email,
         subject: 'Копия вашего сообщения — Алексей Володько',
-        text: [
-          `Здравствуйте, ${data.name}!`,
-          '',
-          'Спасибо за обращение. Ниже копия вашего сообщения:',
-          '',
-          data.comment,
-          '',
-          'С уважением,',
-          'Алексей Володько',
-          config.mail.owner,
-        ].join('\n'),
+        text: userCopyText(data),
         html: buildUserCopyHtml(data),
       }),
     );
@@ -142,11 +183,53 @@ export async function sendContactEmails(data: ContactPayload): Promise<void> {
   }
 }
 
+export async function sendContactEmails(data: ContactPayload): Promise<void> {
+  switch (config.mail.provider) {
+    case 'web3forms':
+      await sendWeb3FormsContact(config.mail.web3formsAccessKey, data);
+      return;
+    case 'resend':
+      await sendContactEmailsViaHttp(sendResendEmail, config.mail.resendApiKey, data);
+      return;
+    case 'sendgrid':
+      await sendContactEmailsViaHttp(
+        sendSendGridEmail,
+        config.mail.sendgridApiKey,
+        data,
+      );
+      return;
+    default:
+      await sendContactEmailsViaSmtp(data);
+  }
+}
+
+export function getMailTransportLabel(): string {
+  switch (config.mail.provider) {
+    case 'web3forms':
+      return 'Web3Forms (HTTPS)';
+    case 'resend':
+      return 'Resend (HTTPS)';
+    case 'sendgrid':
+      return 'SendGrid (HTTPS)';
+    default:
+      return 'SMTP';
+  }
+}
+
 export async function verifyMailConnection(): Promise<boolean> {
-  try {
-    await getTransporter().verify();
-    return true;
-  } catch {
-    return false;
+  switch (config.mail.provider) {
+    case 'web3forms':
+      return verifyWeb3FormsConnection(config.mail.web3formsAccessKey);
+    case 'resend':
+      return verifyResendConnection(config.mail.resendApiKey);
+    case 'sendgrid':
+      return verifySendGridConnection(config.mail.sendgridApiKey);
+    default:
+      try {
+        await getTransporter().verify();
+        return true;
+      } catch {
+        return false;
+      }
   }
 }

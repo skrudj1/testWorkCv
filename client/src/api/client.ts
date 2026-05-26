@@ -34,7 +34,39 @@ async function parseJson<T>(response: Response): Promise<T> {
   }
 }
 
+async function postContactViaWeb3Forms(
+  accessKey: string,
+  data: ContactPayload,
+): Promise<{ message: string }> {
+  const response = await fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      access_key: accessKey,
+      subject: `[Портфолио] Сообщение от ${data.name}`,
+      from_name: 'Портфолио — Алексей Володько',
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      message: data.comment,
+    }),
+  });
+
+  const body = await parseJson<{ success: boolean; message: string }>(response);
+
+  if (!response.ok || !body.success) {
+    throw new ApiError(body.message ?? 'Ошибка отправки', response.status);
+  }
+
+  return { message: 'Сообщение отправлено. Я отвечу на указанный email.' };
+}
+
 export async function postContact(data: ContactPayload): Promise<{ message: string }> {
+  const web3formsKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY?.trim();
+  if (web3formsKey) {
+    return postContactViaWeb3Forms(web3formsKey, data);
+  }
+
   const response = await fetch('/api/contact', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

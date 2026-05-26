@@ -2,7 +2,7 @@
 
 Тестовое задание: одностраничный сайт о себе как о разработчике, с рабочей формой и небольшой AI-фичей.
 
-**Демо:** _(добавь ссылку после деплоя)_  
+**Демо:** https://testworkcv.onrender.com  
 **Контакты:** alexvolodko1504@mail.ru · +7 (931) 998-98-93
 
 ---
@@ -24,7 +24,7 @@
 
 **AI:** OpenRouter, модель `openrouter/free` (бесплатный вариант)
 
-**Почта:** Yandex SMTP (отправка с `tousan123@yandex.ru`)
+**Почта:** SMTP локально (Gmail/Mailtrap); на Render — SendGrid или Resend через HTTPS API
 
 ---
 
@@ -40,7 +40,8 @@ cp .env.example .env
 
 Открой `.env` и заполни:
 
-- **SMTP** — логин/пароль для отправки почты (у меня Yandex + пароль приложения)
+- **SMTP** — для локальной разработки (Mailtrap, Gmail и т.д.)
+- **SendGrid / Resend** — для production на Render (см. ниже)
 - **MAIL_OWNER** — куда приходят заявки с формы
 - **AI_API_KEY** — ключ с [OpenRouter](https://openrouter.ai) (без него форма всё равно работает, AI — нет)
 
@@ -98,7 +99,30 @@ NODE_ENV=production npm start
 - **Build:** `npm install && npm run build`  
 - **Start:** `npm start`  
 - **Env:** те же переменные, что в `.env` (файл в репозиторий не кладём)  
-- **CLIENT_ORIGIN:** URL твоего деплоя, например `https://my-app.onrender.com`
+- **CLIENT_ORIGIN:** URL деплоя, например `https://testworkcv.onrender.com`
+
+### Почта на Render Free
+
+Render **блокирует SMTP** (порты 587/465). Gmail/Яндекс локально работают, на Render — таймаут.
+
+#### Вариант 1 — Web3Forms (проще всего, без SendGrid/Brevo)
+
+1. Открой [web3forms.com](https://web3forms.com) → введи **alexvolodko1504@mail.ru** (или другой ящик для заявок).
+2. Подтверди email → скопируй **Access Key**.
+3. В Render **Environment** (важно: префикс `VITE_` — ключ попадает в сборку фронта):
+
+```
+VITE_WEB3FORMS_ACCESS_KEY=ваш-ключ-с-почты
+CLIENT_ORIGIN=https://testworkcv.onrender.com
+```
+
+4. **Пересоберите** деплой (Clear build cache → Deploy) — без пересборки ключ не подхватится.
+
+Письмо придёт на mail.ru (email отправителя будет в теле письма). Копия посетителю на бесплатном Web3Forms недоступна (поле `ccemail` — Pro). Запросы **только из браузера**.
+
+#### Вариант 2 — SendGrid / Resend
+
+Если регистрация проходит: `MAIL_PROVIDER=sendgrid` + `SENDGRID_API_KEY`, либо Resend с доменом.
 
 ---
 

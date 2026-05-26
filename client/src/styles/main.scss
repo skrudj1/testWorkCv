@@ -400,6 +400,10 @@ p {
 }
 
 // Sections
+.section[id] {
+  scroll-margin-top: calc(#{$header-h} + #{$scroll-anchor-gap});
+}
+
 .section {
   padding: 4rem 0;
 
@@ -416,11 +420,6 @@ p {
     text-align: center;
     max-width: 640px;
     margin: 0 auto 2.5rem;
-
-    // якорь на заголовке секции — не показывать хвост предыдущего блока
-    &[id] {
-      scroll-margin-top: calc(#{$header-h} + #{$scroll-anchor-gap});
-    }
 
     &--left {
       text-align: left;

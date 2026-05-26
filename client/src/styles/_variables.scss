@@ -21,7 +21,8 @@ $radius-lg: 22px;
 $container: 1120px;
 $header-h: 72px;
 // зазор между низом sticky-хедера и eyebrow секции при якорной прокрутке
-$scroll-anchor-gap: 1.75rem;
+// зазор под sticky-хедер при якоре на границу секции (не на eyebrow)
+$scroll-anchor-gap: 1rem;
 
 $shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 

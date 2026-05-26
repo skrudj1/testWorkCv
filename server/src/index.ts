@@ -13,6 +13,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+// Render и другие PaaS — за reverse proxy (нужно для express-rate-limit)
+if (config.isProduction) {
+  app.set('trust proxy', 1);
+}
+
 app.use(helmet());
 app.use(
   cors({
@@ -75,7 +80,9 @@ app.use(
 app.listen(config.port, async () => {
   const mailOk = await verifyMailConnection();
   console.log(`Server: http://localhost:${config.port}`);
-  console.log(`SMTP: ${mailOk ? 'connected' : 'check credentials'}`);
+  console.log(
+    `SMTP: ${mailOk ? 'connected' : 'unreachable (проверьте SMTP_* или смените провайдера на Brevo)'}`,
+  );
   console.log(
     `AI: ${config.ai.enabled ? `${config.ai.model} (${config.ai.baseUrl})` : 'disabled'}`,
   );

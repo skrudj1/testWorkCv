@@ -54,7 +54,23 @@ contactRouter.post('/', async (req, res) => {
       res.status(429).json({
         ok: false,
         message:
-          'Слишком частые отправки (лимит Mailtrap). Подождите 5–10 секунд и попробуйте снова.',
+          'Слишком частые отправки. Подождите 5–10 секунд и попробуйте снова.',
+      });
+      return;
+    }
+
+    const networkError =
+      error instanceof Error &&
+      ('code' in error) &&
+      ['ECONNREFUSED', 'ETIMEDOUT', 'ESOCKET', 'ENOTFOUND'].includes(
+        String((error as { code?: string }).code),
+      );
+
+    if (networkError) {
+      res.status(500).json({
+        ok: false,
+        message:
+          'Сервер не смог подключиться к SMTP. Проверьте SMTP_* в настройках хостинга (на Render Яндекс иногда блокирует — попробуйте Brevo).',
       });
       return;
     }

@@ -53,9 +53,27 @@ function validateClient(): boolean {
   return valid;
 }
 
+function setFormBusy(busy: boolean): void {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+
+  form.classList.toggle('form--busy', busy);
+  form.setAttribute('aria-busy', busy ? 'true' : 'false');
+
+  form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLButtonElement>(
+    'input, textarea, button',
+  ).forEach((el) => {
+    el.disabled = busy;
+  });
+}
+
 function setFormStatus(type: 'idle' | 'loading' | 'success' | 'error', message = ''): void {
   const status = document.getElementById('form-status');
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+  const isLoading = type === 'loading';
+
+  setFormBusy(isLoading);
+
   if (!status) return;
 
   status.className = 'form__status';
@@ -67,14 +85,14 @@ function setFormStatus(type: 'idle' | 'loading' | 'success' | 'error', message =
   status.textContent = message;
 
   if (submitBtn) {
-    submitBtn.disabled = type === 'loading';
+    submitBtn.disabled = isLoading;
     const label = submitBtn.querySelector('.btn__label');
     const spinner = submitBtn.querySelector('.btn__spinner');
     if (label instanceof HTMLElement) {
-      label.hidden = type === 'loading';
+      label.hidden = isLoading;
     }
     if (spinner instanceof HTMLElement) {
-      spinner.hidden = type !== 'loading';
+      spinner.hidden = !isLoading;
     }
   }
 }
@@ -152,6 +170,8 @@ export function initContactForm(): void {
       setFieldError('comment', 'Введите хотя бы несколько слов для улучшения');
       return;
     }
+
+    if (form.classList.contains('form--busy')) return;
 
     setFieldError('comment', '');
     setAiLoading(true);

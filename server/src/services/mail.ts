@@ -40,25 +40,18 @@ function getTransporter(): Transporter {
   if (!transporter) {
     const { host, port, secure, auth } = config.mail.smtp;
 
-    if (host.includes('yandex')) {
-      transporter = nodemailer.createTransport({
-        host: 'smtp.yandex.ru',
-        port,
-        secure,
-        auth: {
-          user: auth.user,
-          pass: auth.pass,
-        },
-        tls: { rejectUnauthorized: true },
-      });
-    } else {
-      transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure,
-        auth,
-      });
-    }
+    const transportOptions = {
+      host: host.includes('yandex') ? 'smtp.yandex.ru' : host,
+      port,
+      secure,
+      auth,
+      connectionTimeout: 20_000,
+      greetingTimeout: 20_000,
+      socketTimeout: 30_000,
+      tls: host.includes('yandex') ? { rejectUnauthorized: true } : undefined,
+    };
+
+    transporter = nodemailer.createTransport(transportOptions);
   }
   return transporter;
 }

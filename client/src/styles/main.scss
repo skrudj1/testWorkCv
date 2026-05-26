@@ -624,6 +624,17 @@ p {
     padding: 2rem;
   }
 
+  &--busy {
+    opacity: 0.88;
+    pointer-events: none;
+
+    input,
+    textarea,
+    button {
+      cursor: wait;
+    }
+  }
+
   &__status {
     min-height: 0;
     margin-bottom: 1rem;

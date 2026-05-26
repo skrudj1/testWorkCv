@@ -18,7 +18,26 @@ if (config.isProduction) {
   app.set('trust proxy', 1);
 }
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        connectSrc: [
+          "'self'",
+          'https://api.web3forms.com',
+          'https://fonts.googleapis.com',
+          'https://fonts.gstatic.com',
+        ],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", 'https://fonts.googleapis.com', "'unsafe-inline'"],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        formAction: ["'self'"],
+      },
+    },
+  }),
+);
 app.use(
   cors({
     origin: config.isProduction ? config.clientOrigin : true,

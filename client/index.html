@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Алексей Володько — Fullstack-разработчик (Frontend-heavy). React, Next.js, Node.js, Web3, AI-инструменты."
+    />
+    <title>Алексей Володько — Fullstack Developer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Перейти к содержимому</a>
+
+    <header class="header" id="top">
+      <div class="container header__inner">
+        <a class="logo" href="#top" aria-label="На главную">
+          <span class="logo__mark">AV</span>
+          <span class="logo__text">Алексей Володько</span>
+        </a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Открыть меню"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <nav class="nav" id="site-nav" aria-label="Основная навигация">
+          <ul class="nav__list">
+            <li><a href="#about">Обо мне</a></li>
+            <li><a href="#approach">Подход</a></li>
+            <li><a href="#cases">Кейсы</a></li>
+            <li><a href="#contact">Контакты</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="container hero__grid">
+          <div class="hero__content">
+            <p class="eyebrow">Fullstack · Frontend-heavy · Санкт-Петербург</p>
+            <h1 id="hero-title">Разрабатываю продукты от UI до API и Web3</h1>
+            <p class="hero__lead">
+              4+ года в коммерческой разработке. React, Next.js, Node.js, платежи,
+              блокчейн-интеграции и AI-инструменты в ежедневной работе.
+            </p>
+            <div class="hero__actions">
+              <a class="btn btn--primary" href="#contact">Написать мне</a>
+              <a class="btn btn--ghost" href="#cases">Смотреть кейсы</a>
+            </div>
+            <ul class="hero__stats" aria-label="Краткие показатели">
+              <li><strong>4+</strong><span>года опыта</span></li>
+              <li><strong>3</strong><span>продукта в ДЕМЛАБС</span></li>
+              <li><strong>LCP &lt;1.5s</strong><span>фокус на perf</span></li>
+            </ul>
+          </div>
+          <aside class="hero__card" aria-label="Стек технологий">
+            <h2 class="hero__card-title">Основной стек</h2>
+            <ul class="tag-list" id="stack-tags"></ul>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="about" aria-labelledby="about-title">
+        <div class="container">
+          <header class="section__header">
+            <p class="eyebrow">01 — Обо мне</p>
+            <h2 id="about-title">Fullstack с упором на frontend</h2>
+            <p class="section__lead">
+              Проектирую архитектуру, пишу интерфейсы и API, стабилизирую релизы и
+              разбираю сложные баги на стыке UI, бэкенда и инфраструктуры.
+            </p>
+          </header>
+          <div class="cards-grid" id="about-cards"></div>
+        </div>
+      </section>
+
+      <section class="section section--alt" id="approach" aria-labelledby="approach-title">
+        <div class="container">
+          <header class="section__header">
+            <p class="eyebrow">02 — Как работаю</p>
+            <h2 id="approach-title">Задачи, качество и AI как усилитель</h2>
+          </header>
+          <div class="timeline" id="approach-list"></div>
+          <div class="ai-banner" id="ai-banner">
+            <div class="ai-banner__icon" aria-hidden="true">✦</div>
+            <div>
+              <h3>AI в рабочем процессе</h3>
+              <p id="ai-banner-text"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="cases" aria-labelledby="cases-title">
+        <div class="container">
+          <header class="section__header">
+            <p class="eyebrow">03 — Кейсы</p>
+            <h2 id="cases-title">Проекты, где я делал ключевые части</h2>
+          </header>
+          <div class="cases" id="cases-list"></div>
+        </div>
+      </section>
+
+      <section class="section section--contact" id="contact" aria-labelledby="contact-title">
+        <div class="container contact-grid">
+          <div>
+            <header class="section__header section__header--left">
+              <p class="eyebrow">04 — Контакты</p>
+              <h2 id="contact-title">Связаться со мной</h2>
+              <p class="section__lead">
+                Оставьте сообщение — письмо придёт мне, а копия — вам на email.
+              </p>
+            </header>
+            <ul class="contact-links" id="contact-links"></ul>
+          </div>
+
+          <form class="form" id="contact-form" novalidate>
+            <div class="form__status" id="form-status" role="status" aria-live="polite"></div>
+
+            <div class="form__field">
+              <label for="name">Имя <span aria-hidden="true">*</span></label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                required
+                minlength="2"
+                maxlength="80"
+                placeholder="Как к вам обращаться"
+              />
+              <span class="form__error" id="error-name" role="alert"></span>
+            </div>
+
+            <div class="form__row">
+              <div class="form__field">
+                <label for="phone">Телефон <span aria-hidden="true">*</span></label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  autocomplete="tel"
+                  required
+                  placeholder="+7 (999) 000-00-00"
+                />
+                <span class="form__error" id="error-phone" role="alert"></span>
+              </div>
+              <div class="form__field">
+                <label for="email">Email <span aria-hidden="true">*</span></label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  required
+                  placeholder="you@example.com"
+                />
+                <span class="form__error" id="error-email" role="alert"></span>
+              </div>
+            </div>
+
+            <div class="form__field">
+              <div class="form__label-row">
+                <label for="comment">Комментарий <span aria-hidden="true">*</span></label>
+                <button
+                  class="btn btn--ai btn--sm"
+                  type="button"
+                  id="ai-improve-btn"
+                  title="Улучшить текст с помощью OpenAI"
+                >
+                  <span class="btn__label">✦ Улучшить текст (AI)</span>
+                  <span class="btn__spinner" hidden aria-hidden="true"></span>
+                </button>
+              </div>
+              <textarea
+                id="comment"
+                name="comment"
+                rows="5"
+                required
+                minlength="10"
+                maxlength="2000"
+                placeholder="Расскажите о задаче или вакансии..."
+              ></textarea>
+              <span class="form__hint" id="ai-hint"></span>
+              <span class="form__error" id="error-comment" role="alert"></span>
+            </div>
+
+            <button class="btn btn--primary btn--block" type="submit" id="submit-btn">
+              <span class="btn__label">Отправить сообщение</span>
+              <span class="btn__spinner" hidden aria-hidden="true"></span>
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <p>© <span id="year"></span> Алексей Володько · Тестовое задание</p>
+        <a href="#top">Наверх ↑</a>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

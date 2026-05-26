@@ -59,18 +59,19 @@ contactRouter.post('/', async (req, res) => {
       return;
     }
 
-    const networkError =
-      error instanceof Error &&
-      ('code' in error) &&
-      ['ECONNREFUSED', 'ETIMEDOUT', 'ESOCKET', 'ENOTFOUND'].includes(
-        String((error as { code?: string }).code),
-      );
+    const errCode =
+      error instanceof Error && 'code' in error
+        ? String((error as { code?: string }).code)
+        : '';
+    const networkError = ['ECONNREFUSED', 'ETIMEDOUT', 'ESOCKET', 'ENOTFOUND'].includes(
+      errCode,
+    );
 
     if (networkError) {
       res.status(500).json({
         ok: false,
         message:
-          'Сервер не смог подключиться к SMTP. Проверьте SMTP_* в настройках хостинга (на Render Яндекс иногда блокирует — попробуйте Brevo).',
+          'Почтовый сервер недоступен с хостинга (таймаут). Яндекс SMTP с Render не работает — укажите Brevo (smtp-relay.brevo.com) в Environment.',
       });
       return;
     }

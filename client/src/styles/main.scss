@@ -9,7 +9,8 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: calc(#{$header-h} + #{$scroll-anchor-gap});
+  --header-h: #{$header-h};
+  --scroll-anchor-gap: #{$scroll-anchor-gap};
 }
 
 body {
@@ -415,6 +416,11 @@ p {
     text-align: center;
     max-width: 640px;
     margin: 0 auto 2.5rem;
+
+    // якорь на заголовке секции — не показывать хвост предыдущего блока
+    &[id] {
+      scroll-margin-top: calc(#{$header-h} + #{$scroll-anchor-gap});
+    }
 
     &--left {
       text-align: left;

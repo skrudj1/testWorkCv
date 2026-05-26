@@ -32,4 +32,31 @@ export function initNavigation(): void {
 
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+
+  const scrollOffset = (): number => {
+    const styles = getComputedStyle(document.documentElement);
+    const headerH = parseFloat(styles.getPropertyValue('--header-h')) || 72;
+    const gap = parseFloat(styles.getPropertyValue('--scroll-anchor-gap')) || 28;
+    return headerH + gap;
+  };
+
+  document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const hash = link.getAttribute('href');
+      if (!hash || hash === '#') return;
+
+      if (hash === '#top') {
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const target = document.querySelector(hash);
+      if (!(target instanceof HTMLElement)) return;
+
+      event.preventDefault();
+      const top = target.getBoundingClientRect().top + window.scrollY - scrollOffset();
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    });
+  });
 }
